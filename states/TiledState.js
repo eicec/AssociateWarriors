@@ -26,13 +26,15 @@ Platformer.TiledState.prototype.init = function(level_data) {
     this.ws = new WebSocket("ws://localhost:8080/");
     this.ws.onmessage = this.onMessage.bind(this);
 
-    this.player = 1;
+    this.player = 0;
 
     this.input.onDown.add(this.processInput, this);
 
     this.paths = {};
     this.visiblePaths = {};
     this.reachOverlays = [];
+    this.message = null;
+    this.playerText = null;
 };
 
 Platformer.TiledState.prototype.create = function() {
@@ -66,7 +68,7 @@ Platformer.TiledState.prototype.create = function() {
     }, this);
 
     // create go button
-    this.add.button(940, 16, 'go', function() {
+    this.add.button(940, 30, 'go', function() {
         this.send({ type: "MOVE", move: this.paths });
         Object.keys(this.visiblePaths).forEach(function(key) {
             this.world.remove(this.visiblePaths[key])
@@ -74,6 +76,8 @@ Platformer.TiledState.prototype.create = function() {
         this.paths = {};
         this.visiblePaths = {};
     }, this, 1, 2);
+
+    this.message = this.add.text(20, 20, "Conectando...", style);
 
     // resize the world to be the size of the current layer
     this.layers[this.map.layer.name].resizeWorld();
@@ -153,10 +157,13 @@ Platformer.TiledState.prototype.onMessage = function(message) {
     switch (message.type) {
         case "START":
             if (message.firstPlayer) {
+                this.player = 1;
                 this.send({ type: "STATE", state: this.state, walls: this.walls });
             } else {
                 this.player = 2;
             }
+            this.playerText = this.add.text(910, 0, "Player " + this.player, style);
+            this.world.remove(this.message);
             break;
     }
 };
@@ -174,30 +181,34 @@ Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
         this.reachable[y][x] = reach;
     }
 
-    var wall;
+    var wall, state;
     // NORTH
-    if (y > 0 && this.state[y - 1][x] == -1) {
+    state = y > 0 && this.state[y - 1][x];
+    if (state == -1 || state == 3) {
         wall = this.walls[y - 1][x];
         if (wall != WALL_S && wall != WALL_SW) {
             this.findReachable(x, y - 1, reach - 1);
         }
     }
     // EAST
-    if (x < 15 && this.state[y][x + 1] == -1) {
+    state = x < 15 && this.state[y][x + 1];
+    if (state == -1 || state == 3) {
         wall = this.walls[y][x + 1];
         if (wall != WALL_W && wall != WALL_SW) {
             this.findReachable(x + 1, y, reach - 1);
         }
     }
     // SOUTH
-    if (y < 8 && this.state[y + 1][x] == -1) {
+    state = y < 8 && this.state[y + 1][x];
+    if (state == -1 || state == 3) {
         wall = this.walls[y][x];
         if (wall != WALL_S && wall != WALL_SW) {
             this.findReachable(x, y + 1, reach - 1);
         }
     }
     // WEST
-    if (x > 0 && this.state[y][x - 1] == -1) {
+    state = x > 0 && this.state[y][x - 1];
+    if (state == -1 || state == 3) {
         wall = this.walls[y][x];
         if (wall != WALL_W && wall != WALL_SW) {
             this.findReachable(x - 1, y, reach - 1);
