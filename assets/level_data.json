@@ -1,0 +1,19 @@
+{
+    "assets": {
+        "map_tiles": { "type": "image", "source": "assets/maps/control_tiles.png" },
+        "level1_tilemap": { "type": "tilemap", "source": "assets/maps/level1.json" },
+        "level2_tilemap": { "type": "tilemap", "source": "assets/maps/level1.json" },
+        "level3_tilemap": { "type": "tilemap", "source": "assets/maps/level1.json" },
+        "p11": { "type": "spritesheet", "source": "assets/p11.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
+        "p12": { "type": "spritesheet", "source": "assets/p11.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
+        "p13": { "type": "spritesheet", "source": "assets/p11.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
+        "p21": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
+        "p22": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
+        "p23": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 }
+    },
+    "groups": [ "players" ],
+    "map": {
+        "key": "level1_tilemap",
+        "tileset": "map_tiles"
+    }
+}
