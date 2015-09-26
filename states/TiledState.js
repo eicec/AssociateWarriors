@@ -51,6 +51,40 @@ Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
     }
 };
 
+Platformer.TiledState.prototype.findPath = function(x, y) {
+    this.path.unshift([x, y]);
+    var reach = this.reachable[y][x];
+
+    // NORTH
+    if (y > 0 && this.reachable[y - 1][x] > reach) {
+        wall = this.walls[y - 1][x];
+        if (wall != WALL_S && wall != WALL_SW) {
+            return this.findPath(x, y - 1);
+        }
+    }
+    // EAST
+    if (x < 15 && this.reachable[y][x + 1] > reach) {
+        wall = this.walls[y][x + 1];
+        if (wall != WALL_W && wall != WALL_SW) {
+            return this.findPath(x + 1, y);
+        }
+    }
+    // SOUTH
+    if (y < 8 && this.reachable[y + 1][x] > reach) {
+        wall = this.walls[y][x];
+        if (wall != WALL_S && wall != WALL_SW) {
+            return this.findPath(x, y + 1);
+        }
+    }
+    // WEST
+    if (x > 0 && this.reachable[y][x - 1] > reach) {
+        wall = this.walls[y][x];
+        if (wall != WALL_W && wall != WALL_SW) {
+            return this.findPath(x - 1, y);
+        }
+    }
+};
+
 Platformer.TiledState.prototype.init = function(level_data) {
     "use strict";
     this.level_data = level_data;
@@ -67,6 +101,7 @@ Platformer.TiledState.prototype.init = function(level_data) {
 
     this.player = 1;
 
+    this.paths = {};
     this.reachOverlays = [];
     function doSomething(pointer) {
         var x = Math.floor(pointer.x / this.map.tileWidth);
@@ -74,6 +109,7 @@ Platformer.TiledState.prototype.init = function(level_data) {
 
         var state = this.state[y][x];
         if (!this.selected) {
+            // Select the character to move
             var character = CHARACTERS[state];
             if (character && character.player == this.player) {
                 this.selected = character;
@@ -89,9 +125,18 @@ Platformer.TiledState.prototype.init = function(level_data) {
                 }
             }
         } else {
+            // Select target destination
             var reachable = this.reachable[y][x];
             if (reachable) {
-                alert(x + "," + y + "=" + reachable);
+                this.path = [];
+                this.findPath(x, y);
+                var points = this.path.map(function(p) {
+                    return new Phaser.Point(p[0] * this.map.tileWidth, p[1] * this.map.tileHeight)
+                }, this);
+                if (this.paths[this.selected.name]) {
+                    this.world.remove(this.paths[this.selected.name]);
+                }
+                this.paths[this.selected.name] = this.game.add.rope(32, 32, 'line', null, points)
             }
             this.selected = null;
             this.reachOverlays.forEach(function(text) {
@@ -124,7 +169,7 @@ Platformer.TiledState.prototype.create = function() {
             tiles.push(row);
         }, this);
 
-        if (layer.name == 'objetos') { // collision layer
+        if (layer.name == 'objetos') {
             this.state = tiles;
         } else if (layer.name == 'walls') {
             this.walls = tiles;

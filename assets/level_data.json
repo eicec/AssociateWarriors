@@ -9,7 +9,8 @@
         "p13": { "type": "spritesheet", "source": "assets/p11.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
         "p21": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
         "p22": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
-        "p23": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 }
+        "p23": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
+        "line": { "type": "image", "source": "assets/line.png" }
     },
     "groups": [ "layers", "characters" ],
     "map": {
