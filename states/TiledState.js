@@ -113,7 +113,7 @@ Platformer.TiledState.prototype.create = function() {
     this.layers = {};
     this.prefabs = {};
     this.map.layers.forEach(function(layer) {
-        this.layers[layer.name] = this.map.createLayer(layer.name);
+        this.layers[layer.name] = this.map.createLayer(layer.name, undefined, undefined, this.groups["layers"]);
         var tiles = [];
         layer.data.forEach(function(data_row) { // find tiles used in the layer
             var row = [];
@@ -123,7 +123,7 @@ Platformer.TiledState.prototype.create = function() {
             }, this);
             tiles.push(row);
         }, this);
-        //   this.map.setCollision(collision_tiles, true, layer.name);
+
         if (layer.name == 'objetos') { // collision layer
             this.state = tiles;
         } else if (layer.name == 'walls') {
@@ -138,9 +138,7 @@ Platformer.TiledState.prototype.create = function() {
 Platformer.TiledState.prototype.create_object = function(object) {
     "use strict";
     var position, prefab;
-    // tiled coordinates starts in the bottom left corner
     position = { "x": object.x * this.map.tileHeight, "y": object.y * this.map.tileHeight };
-    // create object according to its type
     switch (object.index) {
         case P11:
         case P21:

@@ -11,7 +11,7 @@
         "p22": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
         "p23": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 }
     },
-    "groups": [ "characters" ],
+    "groups": [ "layers", "characters" ],
     "map": {
         "key": "level1_tilemap",
         "tileset": "map_tiles"
