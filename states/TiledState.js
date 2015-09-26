@@ -91,7 +91,7 @@ Platformer.TiledState.prototype.create = function() {
 Platformer.TiledState.prototype.create_object = function(object) {
     "use strict";
     var position, prefab;
-    position = { "x": object.x * this.map.tileHeight, "y": object.y * this.map.tileHeight };
+    position = { "x": object.x * this.map.tileHeight + 6, "y": object.y * this.map.tileHeight - 6 };
     switch (object.index) {
         case P11:
         case P21:
