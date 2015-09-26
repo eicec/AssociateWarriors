@@ -12,6 +12,9 @@ var P21 = 9;
 var P22 = 10;
 var P23 = 11;
 
+var CONNECTING = "Conectando...";
+var WAITING_OTHER_PLAYER = "Esperando outro jogador...";
+
 var CHARACTERS = {};
 
 CHARACTERS[P11] = { type: P11, player: 1, name: "p11", reach: 5 };
