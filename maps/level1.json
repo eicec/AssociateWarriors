@@ -3,11 +3,6 @@
         "map_tiles": { "type": "image", "source": "maps/control_tiles.png" },
         "level_tilemap": { "type": "tilemap", "source": "maps/level1_map.json" }
     },
-    "groups": [
-        "enemies",
-        "goals",
-        "players"
-    ],
     "map": {
         "key": "level_tilemap",
         "tileset": "map_tiles"
