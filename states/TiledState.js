@@ -62,6 +62,7 @@ Platformer.TiledState.prototype.create = function() {
 
         if (layer.name == 'objetos') {
             this.state = tiles;
+            this.layers[layer.name].alpha = 0.2; // FIXME: visible = false
         } else if (layer.name == 'walls') {
             this.walls = tiles;
         }
