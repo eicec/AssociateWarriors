@@ -75,9 +75,10 @@ Platformer.TiledState.prototype.create = function() {
         }, this);
         this.paths = {};
         this.visiblePaths = {};
+        this.showMessage("Esperando outro jogador...");
     }, this, 1, 2);
 
-    this.message = this.add.text(20, 20, "Conectando...", style);
+    this.showMessage("Conectando...");
 
     // resize the world to be the size of the current layer
     this.layers[this.map.layer.name].resizeWorld();
@@ -146,14 +147,19 @@ Platformer.TiledState.prototype.processInput = function(pointer) {
         }
         this.selected = null;
         this.reachOverlays.forEach(function(overlay) {
-            this.world.remove(overlay)
+            this.world.remove(overlay);
         }, this);
     }
+};
+
+Platformer.TiledState.prototype.showMessage = function(message) {
+    this.message = this.add.text(20, 20, message, style);
 };
 
 Platformer.TiledState.prototype.onMessage = function(message) {
     console.log("Received message:", message);
     message = JSON.parse(message.data);
+
     switch (message.type) {
         case "START":
             if (message.firstPlayer) {
@@ -163,8 +169,12 @@ Platformer.TiledState.prototype.onMessage = function(message) {
                 this.player = 2;
             }
             this.playerText = this.add.text(910, 0, "Player " + this.player, style);
-            this.world.remove(this.message);
             break;
+    }
+
+    if (this.message) {
+        this.world.remove(this.message);
+        this.message = null;
     }
 };
 
