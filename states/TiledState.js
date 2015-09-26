@@ -11,6 +11,160 @@ Platformer.TiledState = function() {
 Platformer.TiledState.prototype = Object.create(Phaser.State.prototype);
 Platformer.TiledState.prototype.constructor = Platformer.TiledState;
 
+Platformer.TiledState.prototype.init = function(level_data) {
+    "use strict";
+    this.level_data = level_data;
+
+    this.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+    this.scale.pageAlignHorizontally = true;
+    this.scale.pageAlignVertically = true;
+
+    // create map and set tileset
+    this.map = this.game.add.tilemap(level_data.map.key);
+    this.map.addTilesetImage(this.map.tilesets[0].name, level_data.map.tileset);
+
+    this.ws = new WebSocket("ws://localhost:8080/");
+    this.ws.onmessage = this.onMessage.bind(this);
+
+    this.player = 1;
+
+    this.input.onDown.add(this.processInput, this);
+
+    this.paths = {};
+    this.visiblePaths = {};
+    this.reachOverlays = [];
+};
+
+Platformer.TiledState.prototype.create = function() {
+    "use strict";
+    // create groups
+    this.groups = {};
+    this.level_data.groups.forEach(function(group_name) {
+        this.groups[group_name] = this.game.add.group();
+    }, this);
+
+    // create map layers
+    this.layers = {};
+    this.prefabs = {};
+    this.map.layers.forEach(function(layer) {
+        this.layers[layer.name] = this.map.createLayer(layer.name, undefined, undefined, this.groups["layers"]);
+        var tiles = [];
+        layer.data.forEach(function(data_row) { // find tiles used in the layer
+            var row = [];
+            data_row.forEach(function(tile) {
+                row.push(tile.index);
+                this.create_object(tile);
+            }, this);
+            tiles.push(row);
+        }, this);
+
+        if (layer.name == 'objetos') {
+            this.state = tiles;
+        } else if (layer.name == 'walls') {
+            this.walls = tiles;
+        }
+    }, this);
+
+    // create go button
+    this.add.button(940, 16, 'go', function() {
+        this.send({ type: "MOVE", move: this.paths });
+        Object.keys(this.visiblePaths).forEach(function(key) {
+            this.world.remove(this.visiblePaths[key])
+        }, this);
+        this.paths = {};
+        this.visiblePaths = {};
+    }, this, 1, 2);
+
+    // resize the world to be the size of the current layer
+    this.layers[this.map.layer.name].resizeWorld();
+};
+
+Platformer.TiledState.prototype.create_object = function(object) {
+    "use strict";
+    var position, prefab;
+    position = { "x": object.x * this.map.tileHeight, "y": object.y * this.map.tileHeight };
+    switch (object.index) {
+        case P11:
+        case P21:
+            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters" });
+            break;
+        case P12:
+        case P22:
+            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters" });
+            break;
+        case P13:
+        case P23:
+            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters" });
+            break;
+        case MONEY:
+            prefab = new Platformer.Goal(this, position);
+            break;
+    }
+    if (prefab) {
+        this.prefabs[object.name] = prefab;
+    }
+};
+Platformer.TiledState.prototype.processInput = function(pointer) {
+    var x = Math.floor(pointer.x / this.map.tileWidth);
+    var y = Math.floor(pointer.y / this.map.tileHeight);
+
+    var state = this.state[y][x];
+    if (!this.selected) {
+        // Select the character to move
+        var character = CHARACTERS[state];
+        if (character && character.player == this.player) {
+            this.selected = character;
+            this.reachable = [[], [], [], [], [], [], [], [], []];
+            this.findReachable(x, y, character.reach);
+            for (var y1 = 0; y1 < 9; y1++) {
+                for (var x1 = 0; x1 < 16; x1++) {
+                    var reach = this.reachable[y1][x1];
+                    if (reach) {
+                        this.reachOverlays.push(this.add.text(x1 * this.map.tileWidth + 24, y1 * this.map.tileHeight + 16, reach, style));
+                    }
+                }
+            }
+        }
+    } else {
+        // Select target destination
+        var reachable = this.reachable[y][x];
+        if (reachable) {
+            this.path = [];
+            this.findPath(x, y);
+            var points = this.path.map(function(p) {
+                return new Phaser.Point(p[0] * this.map.tileWidth, p[1] * this.map.tileHeight)
+            }, this);
+            if (this.visiblePaths[this.selected.type]) {
+                this.world.remove(this.visiblePaths[this.selected.type]);
+            }
+            this.visiblePaths[this.selected.type] = this.game.add.rope(32, 32, 'line', null, points);
+            this.paths[this.selected.type] = this.path.shift();
+        }
+        this.selected = null;
+        this.reachOverlays.forEach(function(overlay) {
+            this.world.remove(overlay)
+        }, this);
+    }
+};
+
+Platformer.TiledState.prototype.onMessage = function(message) {
+    console.log("Received message:", message);
+    message = JSON.parse(message.data);
+    switch (message.type) {
+        case "START":
+            if (message.firstPlayer) {
+                this.send({ type: "STATE", state: this.state, walls: this.walls });
+            } else {
+                this.player = 2;
+            }
+            break;
+    }
+};
+
+Platformer.TiledState.prototype.send = function(message) {
+    this.ws.send(JSON.stringify(message));
+};
+
 Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
     if (reach == 0) {
         return;
@@ -82,127 +236,6 @@ Platformer.TiledState.prototype.findPath = function(x, y) {
         if (wall != WALL_W && wall != WALL_SW) {
             return this.findPath(x - 1, y);
         }
-    }
-};
-
-Platformer.TiledState.prototype.init = function(level_data) {
-    "use strict";
-    this.level_data = level_data;
-
-    this.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
-    this.scale.pageAlignHorizontally = true;
-    this.scale.pageAlignVertically = true;
-
-    // create map and set tileset
-    this.map = this.game.add.tilemap(level_data.map.key);
-    this.map.addTilesetImage(this.map.tilesets[0].name, level_data.map.tileset);
-
-    this.input.onDown.add(doSomething, this);
-
-    this.player = 1;
-
-    this.paths = {};
-    this.reachOverlays = [];
-    function doSomething(pointer) {
-        var x = Math.floor(pointer.x / this.map.tileWidth);
-        var y = Math.floor(pointer.y / this.map.tileHeight);
-
-        var state = this.state[y][x];
-        if (!this.selected) {
-            // Select the character to move
-            var character = CHARACTERS[state];
-            if (character && character.player == this.player) {
-                this.selected = character;
-                this.reachable = [[], [], [], [], [], [], [], [], []];
-                this.findReachable(x, y, character.reach);
-                for (var y1 = 0; y1 < 9; y1++) {
-                    for (var x1 = 0; x1 < 16; x1++) {
-                        var reach = this.reachable[y1][x1];
-                        if (reach) {
-                            this.reachOverlays.push(this.add.text(x1 * this.map.tileWidth + 24, y1 * this.map.tileHeight + 16, reach, style));
-                        }
-                    }
-                }
-            }
-        } else {
-            // Select target destination
-            var reachable = this.reachable[y][x];
-            if (reachable) {
-                this.path = [];
-                this.findPath(x, y);
-                var points = this.path.map(function(p) {
-                    return new Phaser.Point(p[0] * this.map.tileWidth, p[1] * this.map.tileHeight)
-                }, this);
-                if (this.paths[this.selected.name]) {
-                    this.world.remove(this.paths[this.selected.name]);
-                }
-                this.paths[this.selected.name] = this.game.add.rope(32, 32, 'line', null, points)
-            }
-            this.selected = null;
-            this.reachOverlays.forEach(function(text) {
-                this.world.remove(text)
-            }, this);
-        }
-    }
-};
-
-Platformer.TiledState.prototype.create = function() {
-    "use strict";
-    // create groups
-    this.groups = {};
-    this.level_data.groups.forEach(function(group_name) {
-        this.groups[group_name] = this.game.add.group();
-    }, this);
-
-    // create map layers
-    this.layers = {};
-    this.prefabs = {};
-    this.map.layers.forEach(function(layer) {
-        this.layers[layer.name] = this.map.createLayer(layer.name, undefined, undefined, this.groups["layers"]);
-        var tiles = [];
-        layer.data.forEach(function(data_row) { // find tiles used in the layer
-            var row = [];
-            data_row.forEach(function(tile) {
-                row.push(tile.index);
-                this.create_object(tile);
-            }, this);
-            tiles.push(row);
-        }, this);
-
-        if (layer.name == 'objetos') {
-            this.state = tiles;
-        } else if (layer.name == 'walls') {
-            this.walls = tiles;
-        }
-    }, this);
-
-    // resize the world to be the size of the current layer
-    this.layers[this.map.layer.name].resizeWorld();
-};
-
-Platformer.TiledState.prototype.create_object = function(object) {
-    "use strict";
-    var position, prefab;
-    position = { "x": object.x * this.map.tileHeight, "y": object.y * this.map.tileHeight };
-    switch (object.index) {
-        case P11:
-        case P21:
-            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters" });
-            break;
-        case P12:
-        case P22:
-            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters" });
-            break;
-        case P13:
-        case P23:
-            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters" });
-            break;
-        case MONEY:
-            prefab = new Platformer.Goal(this, position);
-            break;
-    }
-    if (prefab) {
-        this.prefabs[object.name] = prefab;
     }
 };
 

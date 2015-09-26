@@ -14,9 +14,9 @@ var P23 = 11;
 
 var CHARACTERS = {};
 
-CHARACTERS[P11] = { player: 1, name: "p11", reach: 5 };
-CHARACTERS[P12] = { player: 1, name: "p12", reach: 5 };
-CHARACTERS[P13] = { player: 1, name: "p13", reach: 5 };
-CHARACTERS[P21] = { player: 2, name: "p21", reach: 5 };
-CHARACTERS[P22] = { player: 2, name: "p22", reach: 5 };
-CHARACTERS[P23] = { player: 2, name: "p23", reach: 5 };
+CHARACTERS[P11] = { type: P11, player: 1, name: "p11", reach: 5 };
+CHARACTERS[P12] = { type: P12, player: 1, name: "p12", reach: 5 };
+CHARACTERS[P13] = { type: P13, player: 1, name: "p13", reach: 5 };
+CHARACTERS[P21] = { type: P21, player: 2, name: "p21", reach: 5 };
+CHARACTERS[P22] = { type: P22, player: 2, name: "p22", reach: 5 };
+CHARACTERS[P23] = { type: P23, player: 2, name: "p23", reach: 5 };
