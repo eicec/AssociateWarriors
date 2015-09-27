@@ -95,7 +95,7 @@ Platformer.TiledState.prototype.create = function() {
 Platformer.TiledState.prototype.create_object = function(object) {
     "use strict";
     var position, prefab;
-    position = { "x": object.x * this.map.tileHeight, "y": object.y * this.map.tileHeight };
+    position = { "x": object.x * this.map.tileHeight + 32, "y": object.y * this.map.tileHeight + 32 };
     switch (object.index) {
         case P11:
         case P21:
@@ -131,16 +131,13 @@ Platformer.TiledState.prototype.create_object = function(object) {
 };
 
 Platformer.TiledState.prototype.processInput = function(pointer) {
-    console.log("························1");
     var x = Math.floor(pointer.x / this.map.tileWidth);
     var y = Math.floor(pointer.y / this.map.tileHeight);
 
     var state = this.state[y][x];
-    console.log("························2", this.selected, x, y);
     if (!this.selected) {
         // Select the character to move
         var character = CHARACTERS[state];
-        console.log("························3", character, character && character.player, this.player);
         if (character && character.player == this.player) {
             this.selected = character;
             this.reachable = [[], [], [], [], [], [], [], [], []];
@@ -268,17 +265,17 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
                     var posX = pos[0];
                     var posY = pos[1];
 
-                    var angle = this.calculateAngle(player.x, player.y, (posX * 64), (posY * 64));
-                    if (angle && false) {
+                    var angle = this.calculateAngle(player, (posX * 64) + 32, (posY * 64) + 32);
+                    if (angle) {
                         this.add.tween(player).to({ angle: angle }, 100, Phaser.Easing.Linear.none, true).chain(
-                                this.add.tween(player).to({ x: (posX * 64), y: (posY * 64) }, 700, Phaser.Easing.Linear.none)
+                                this.add.tween(player).to({ x: (posX * 64) + 32, y: (posY * 64) + 32 }, 600, Phaser.Easing.Linear.none)
                         );
                     } else {
-                        this.add.tween(player).to({ x: (posX * 64), y: (posY * 64) }, 800, Phaser.Easing.Linear.none, true);
+                        this.add.tween(player).to({ x: (posX * 64) + 32, y: (posY * 64) + 32 }, 700, Phaser.Easing.Linear.none, true);
                     }
                 }
             }, this);
-        }.bind(this), (i++) * 800);
+        }.bind(this), (i++) * 700);
     }, this);
 
     if(bullet){
@@ -287,27 +284,34 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
     }
 };
 
-Platformer.TiledState.prototype.calculateAngle = function(x, y, xPos, yPos) {
-
+Platformer.TiledState.prototype.calculateAngle = function(player, xPos, yPos) {
     var angle;
+    var lastAngle = player.angle;
+    var dx = xPos - player.x;
+    var dy = yPos - player.y;
 
-    if (x > xPos) {
-        angle = 0;
+    console.log("dx, dy: ", dx, dy);
 
-    } else if (x < xPos) {
-        angle = 180;
-
+    if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx < -1) {
+            angle = 0;
+        } else if (dx > 1) {
+            angle = 180;
+        }
+    } else {
+        if (dy < -1) {
+            angle = 90;
+        } else if (dy > 1) {
+            angle = -90;
+        }
     }
 
-    if (y > yPos) {
-        angle = 90;
+    console.log("last angle: ", lastAngle);
+    console.log("angle: ", angle);
 
-    } else if (y < yPos) {
-        angle = -90;
-
+    while (Math.abs(lastAngle - angle) > 180) {
+        angle += angle < lastAngle ? 360 : -360;
     }
-
-    console.log("Angle: ", angle);
 
     return angle;
 };
