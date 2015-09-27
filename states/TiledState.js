@@ -196,118 +196,41 @@ Platformer.TiledState.prototype.onMessage = function(message) {
     if (this.message) {
         this.world.remove(this.message);
         this.message = null;
-        this.actionController = 0;
     }
 };
-
-
-///////////////////////////////////////////////////////////
-
-/*
-
- for(var data in actionsData)
- {
- for(var i in data)
- {
- // ver se o player está vivo
- var id = data[i];
- var posX = data[i].pos[0];
- var posY = data[i].pos[1];
- var shoot = false
- if (data[i].shoot){
- var shootX = data[i].shoot[0];
- var shootY = data[i].shoot[1];
- shoot = true
- }
- var die = data[i].die;
-
-
- this.move(id, posX, posY);
-
- if(shoot) {
- this.shoot(id, shootX, shootY);
- }
-
- this.die(id,die);
- }
- }
-
- */
 
 Platformer.TiledState.prototype.proccessActions = function(message) {
     //received: {"type":"ACTIONS","actions":[{"5":{"pos":[1,1],"shoot":false, "die":true},"6":{"pos":[3,3],"shoot":false},"7":{"pos":[5,5]}},{"4":{"pos":[2,2]},"8":{"pos":[4,4]}}]}
-    var actionsData = message.actions;
-
-
-     for(var data in actionsData)
-     {
-
-      // Shoot
-        for(var i in data)
-        {
-          // ver se o player está vivo
-        var shoot = false
-
-        if (data[i].shoot){
-            var shootX = data[i].shoot[0];
-            var shootY = data[i].shoot[1];
-            shoot = true
-        }
-
-          if(shoot) {
-            this.shoot(id, shootX, shootY);
-          }
-
-      }
-
-     // Die
-        for(var i in data)
-        {
-            // ver se o player está vivo
-            var id = data[i];
-
-            var die = data[i].die;
-
-            if(die) {
-              this.die(id,die);
+    message.actions.forEach(function(action) {
+        // SHOOT
+        Object.keys(action).forEach(function(id) {
+            if (action[id].shoot) {
+                var shootX = action[id].shoot[0];
+                var shootY = action[id].shoot[1];
             }
-        }
-
-     // Move
-        for(var i in data)
-        {
+        }, this);
+        // DIE
+        Object.keys(action).forEach(function(id) {
+            if (action[id].die) {
+            }
+        }, this);
+        // MOVE
+        Object.keys(action).forEach(function(id) {
             // ver se o player está vivo
-            var id = data[i];
-            var posX = data[i].pos[0];
-            var posY = data[i].pos[1];
+            var pos = action[id].pos;
+            if (pos) {
+                var posX = pos[0];
+                var posY = pos[1];
 
-            this.move(id, posX, posY);
+                console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@1", this.prefabs);
+                console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@2", pos);
+                var player = this.prefabs[id];
 
-        }
-    }
-
+                this.add.tween(player).to({ x: (posX * 64), y: (posY * 64) }, 3800, Phaser.Easing.Linear.none, true);
+            }
+        }, this);
+    }, this);
 };
-
-Platformer.TiledState.prototype.move = function(id, posX, posY) {
-
-
-//    this.prefabs[id].x = posX * 64;
-//    this.prefabs[id].y = posY * 64;
-    var player = this.prefabs[id]
-
-    game.add.tween(player).to({x: (posX * 64), y: (posY * 64)}, 3800, Phaser.Easing.Linear.none, true);
-
-
-};
-
-Platformer.TiledState.prototype.shoot = function(id, shootX, shootY) {
-
-};
-
-Platformer.TiledState.prototype.die = function(id, die) {
-
-};
-
 
 
 /////////////////////////////////////////////////////////////
