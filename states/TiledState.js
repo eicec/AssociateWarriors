@@ -72,7 +72,7 @@ Platformer.TiledState.prototype.create = function() {
 
     // create go button
     this.add.button(940, 30, 'go', function() {
-        console.log("Paths: " + this.paths.toString());
+        console.log("Paths: ", this.paths);
         console.log(this.player);
         this.send({ type: "MOVE", move: this.paths });
         Object.keys(this.visiblePaths).forEach(function(key) {
@@ -187,6 +187,7 @@ Platformer.TiledState.prototype.onMessage = function(message) {
             this.playerText = this.add.text(910, 0, "Player " + this.player, style);
             break;
         case "ACTIONS":
+            this.proccessActions(message);
             break;
         case "STATE":
             break;
@@ -198,6 +199,118 @@ Platformer.TiledState.prototype.onMessage = function(message) {
         this.actionController = 0;
     }
 };
+
+
+///////////////////////////////////////////////////////////
+
+/*
+
+ for(var data in actionsData)
+ {
+ for(var i in data)
+ {
+ // ver se o player está vivo
+ var id = data[i];
+ var posX = data[i].pos[0];
+ var posY = data[i].pos[1];
+ var shoot = false
+ if (data[i].shoot){
+ var shootX = data[i].shoot[0];
+ var shootY = data[i].shoot[1];
+ shoot = true
+ }
+ var die = data[i].die;
+
+
+ this.move(id, posX, posY);
+
+ if(shoot) {
+ this.shoot(id, shootX, shootY);
+ }
+
+ this.die(id,die);
+ }
+ }
+
+ */
+
+Platformer.TiledState.prototype.proccessActions = function(message) {
+    //received: {"type":"ACTIONS","actions":[{"5":{"pos":[1,1],"shoot":false, "die":true},"6":{"pos":[3,3],"shoot":false},"7":{"pos":[5,5]}},{"4":{"pos":[2,2]},"8":{"pos":[4,4]}}]}
+    var actionsData = message.actions;
+
+
+     for(var data in actionsData)
+     {
+
+      // Shoot
+        for(var i in data)
+        {
+          // ver se o player está vivo
+        var shoot = false
+
+        if (data[i].shoot){
+            var shootX = data[i].shoot[0];
+            var shootY = data[i].shoot[1];
+            shoot = true
+        }
+
+          if(shoot) {
+            this.shoot(id, shootX, shootY);
+          }
+
+      }
+
+     // Die
+        for(var i in data)
+        {
+            // ver se o player está vivo
+            var id = data[i];
+
+            var die = data[i].die;
+
+            if(die) {
+              this.die(id,die);
+            }
+        }
+
+     // Move
+        for(var i in data)
+        {
+            // ver se o player está vivo
+            var id = data[i];
+            var posX = data[i].pos[0];
+            var posY = data[i].pos[1];
+
+            this.move(id, posX, posY);
+
+        }
+    }
+
+};
+
+Platformer.TiledState.prototype.move = function(id, posX, posY) {
+
+
+//    this.prefabs[id].x = posX * 64;
+//    this.prefabs[id].y = posY * 64;
+    var player = this.prefabs[id]
+
+    game.add.tween(player).to({x: (posX * 64), y: (posY * 64)}, 3800, Phaser.Easing.Linear.none, true);
+
+
+};
+
+Platformer.TiledState.prototype.shoot = function(id, shootX, shootY) {
+
+};
+
+Platformer.TiledState.prototype.die = function(id, die) {
+
+};
+
+
+
+/////////////////////////////////////////////////////////////
 
 Platformer.TiledState.prototype.send = function(message) {
     this.ws.send(JSON.stringify(message));

@@ -4,7 +4,7 @@ Platformer.Player = function(game_state, position, properties) {
     "use strict";
     Platformer.Prefab.call(this, game_state, position, properties);
 
-    if(properties.isP1 != null){
+    if(properties.isP1 != null) {
       this.isP1 = properties.isP1;
     }
 
@@ -19,4 +19,3 @@ Platformer.Player.prototype.constructor = Platformer.Player;
 Platformer.Player.prototype.update = function() {
     "use strict";
 };
-
