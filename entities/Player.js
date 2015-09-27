@@ -4,9 +4,7 @@ Platformer.Player = function(game_state, position, properties) {
     "use strict";
     Platformer.Prefab.call(this, game_state, position, properties);
 
-    if (properties.isP1 != null) {
-        this.isP1 = properties.isP1;
-    }
+    this.index = properties.index;
 
     //this.animations.add("walking", [0, 1, 2, 1], 6, true);
     //this.frame = 3;

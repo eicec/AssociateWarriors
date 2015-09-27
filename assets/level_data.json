@@ -34,7 +34,7 @@
     },
     "groups": [ "layers", "paths", "goals", "characters" ],
     "map": {
-        "key": "level2_tilemap",
+        "key": "level1_tilemap",
         "tileset": "map_tiles"
     }
 }
