@@ -230,24 +230,29 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
                 // SHOOT
                 if (action[id].shoot) {
                     if (id == P11 || id == P21) {
-                        bullet = game.add.sprite(player.x, player.y, 'p11_p');
+                        bullet = game.add.sprite(player.x + 32, player.y + 32, 'p11_p');
                     } else if (id == P12 || id == P22) {
-                        bullet = game.add.sprite(player.x, player.y, 'p12_p');
+                        bullet = game.add.sprite(player.x + 32, player.y + 32, 'p12_p');
                     } else if (id == P13 || id == P23) {
-                        bullet = game.add.sprite(player.x, player.y, 'p13_p');
+                        bullet = game.add.sprite(player.x + 32, player.y + 32, 'p13_p');
                     }
 
-                    var shootX = action[id].shoot[0] * 64 + 32;
-                    var shootY = action[id].shoot[1] * 64 + 32;
+                    var shoot = new Phaser.Point(action[id].shoot[0] * 64 + 64, action[id].shoot[1] * 64 + 64);
 
-                    bullet.angle = this.calculateAngle(player, shootX, shootY);
+                    bullet.position = Phaser.Point.add(bullet.position, Phaser.Point.subtract(shoot, bullet.position).setMagnitude(32));
+                    bullet.angle = this.calculateAngle(bullet, shoot.x, shoot.y);
 
-                    var tween = this.add.tween(bullet).to({ x: shootX, y: shootY }, 300, Phaser.Easing.Linear.none, false);
-                    tween.onComplete.add(function() {
+                    var bulletTween = this.add.tween(bullet).to({ x: shoot.x, y: shoot.y }, 300, Phaser.Easing.Linear.none, false);
+                    bulletTween.onComplete.add(function() {
                         bullet.destroy();
                         //emitter.destroy();
+                        player.frame = 0;
                     }, this);
-                    this.add.tween(player).to({ angle: bullet.angle }, 100, Phaser.Easing.Linear.none, true).chain(tween);
+                    var rotTween = this.add.tween(player).to({ angle: bullet.angle }, 100, Phaser.Easing.Linear.none, true);
+                    rotTween.onComplete.add(function() {
+                        player.frame = 1;
+                    }, this);
+                    rotTween.chain(bulletTween);
                 }
 
                 // DIE
