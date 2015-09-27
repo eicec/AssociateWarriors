@@ -72,8 +72,7 @@ Platformer.TiledState.prototype.create = function() {
 
     // create go button
     this.add.button(940, 30, 'go', function() {
-        console.log("Paths: ", this.paths);
-        console.log(this.player);
+        console.log("paths: ", JSON.stringify(this.paths));
         this.send({ type: "MOVE", move: this.paths });
         Object.keys(this.visiblePaths).forEach(function(key) {
             this.world.remove(this.visiblePaths[key])
@@ -160,7 +159,8 @@ Platformer.TiledState.prototype.processInput = function(pointer) {
                 this.world.remove(this.visiblePaths[this.selected.type]);
             }
             this.visiblePaths[this.selected.type] = this.game.add.rope(32, 32, 'line', null, points);
-            this.paths[this.selected.type] = this.path.shift();
+            this.path.shift();
+            this.paths[this.selected.type] = this.path;
         }
         this.selected = null;
         this.reachOverlays.forEach(function(overlay) {
