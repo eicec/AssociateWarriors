@@ -248,7 +248,7 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
                 var player = this.prefabs[id];
 
 
-                var tween = this.add.tween(player).to({x: (posX * 64), y: (posY * 64)}, 800, Phaser.Easing.Linear.none);
+                var tween = this.add.tween(player).to({x: (posX * 64), y: (posY * 64), angle: this.calculateAngle()}, 800, Phaser.Easing.Linear.none);
 
                 if (tweens[id]) {
                     tweens[id].push(tween);
@@ -286,6 +286,33 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
 
 
 };
+
+
+Platformer.TiledState.prototype.calculateAngle = function(x,y,xPos,yPos) {
+
+    var angle;
+
+    if (x > xPos) {
+        angle = 0;
+
+    } else if (x < xPos) {
+        angle = 180;
+
+    }
+
+    if (y > yPos) {
+        angle = 90;
+
+    } else if (y < yPos) {
+        angle = -90;
+
+    }
+
+    console.log("Angle: ",angle);
+
+    return angle;
+};
+
 
 
 /////////////////////////////////////////////////////////////
