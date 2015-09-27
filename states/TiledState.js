@@ -223,6 +223,7 @@ Platformer.TiledState.prototype.onMessage = function(message) {
 
 Platformer.TiledState.prototype.proccessActions = function(message) {
     var i = 0;
+    var bullet = null;
     message.actions.forEach(function(action) {
         setTimeout(function() {
             console.log("proccessActions: ", action);
@@ -232,8 +233,27 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
 
                 // SHOOT
                 if (action[id].shoot) {
+                    if(id == P11 || id ==  P21) {
+                     bullet = game.add.sprite(player.x, player.y, 'p11_p');
+                    } else if(id == P12 || id ==  P22) {
+                     bullet = game.add.sprite(player.x, player.y, 'p12_p');
+                    } else if(id == P13 || id ==  P23) {
+                     bullet = game.add.sprite(player.x, player.y, 'p13_p');
+                    }
+
+
                     var shootX = action[id].shoot[0];
                     var shootY = action[id].shoot[1];
+
+                    bullet.angle = player.angle;
+
+                    console.log("Shoots: X : Y = ",shootX+" : "+shootY);
+                    //aux
+                    game.add.sprite((shootX * 64), (shootY * 64), 'p11_p');
+
+                    this.add.tween(bullet).to({ x: (shootX * 64), y: (shootY * 64) }, 500, Phaser.Easing.Linear.none, true);
+
+
                 }
 
                 // DIE
@@ -260,6 +280,11 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
             }, this);
         }.bind(this), (i++) * 800);
     }, this);
+
+    if(bullet){
+        bullet.kill();
+        bullet = null;
+    }
 };
 
 Platformer.TiledState.prototype.calculateAngle = function(x, y, xPos, yPos) {

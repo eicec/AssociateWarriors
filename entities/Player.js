@@ -10,9 +10,9 @@ Platformer.Player = function(game_state, position, properties) {
 
     //this.animations.add("walking", [0, 1, 2, 1], 6, true);
     //this.frame = 3;
-    this.pivot.set(32, 32);
-    this.deltaX = 32;
-    this.deltaY = 32;
+    //this.pivot.set(32, 32);
+    //this.deltaX = 32;
+    //this.deltaY = 32;
 };
 
 Platformer.Player.prototype = Object.create(Platformer.Prefab.prototype);
