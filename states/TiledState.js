@@ -55,7 +55,7 @@ Platformer.TiledState.prototype.create = function() {
         layer.data.forEach(function(data_row) { // find tiles used in the layer
             var row = [];
             data_row.forEach(function(tile) {
-                row.push(tile.index);
+                row.push(tile.index > 0 ? tile.index : 0);
                 this.create_object(tile);
             }, this);
             tiles.push(row);
@@ -72,7 +72,7 @@ Platformer.TiledState.prototype.create = function() {
     }, this);
 
     // create go button
-    this.add.button(940, 30, 'go', function() {
+    this.okButton = this.add.button(900, 0, 'go', function() {
         console.log("paths: ", JSON.stringify(this.paths));
         this.send({ type: "MOVE", move: this.paths });
         var pathGroup = this.groups["paths"];
@@ -81,9 +81,11 @@ Platformer.TiledState.prototype.create = function() {
         }, this);
         this.paths = {};
         this.visiblePaths = {};
+        this.okButton.visible = false;
         this.showMessage(WAITING_OTHER_PLAYER);
     }, this, 1, 2);
 
+    this.okButton.visible = false;
     this.showMessage(CONNECTING);
 
     // resize the world to be the size of the current layer
@@ -127,14 +129,18 @@ Platformer.TiledState.prototype.create_object = function(object) {
         this.prefabs[object.index] = prefab;
     }
 };
+
 Platformer.TiledState.prototype.processInput = function(pointer) {
+    console.log("························1");
     var x = Math.floor(pointer.x / this.map.tileWidth);
     var y = Math.floor(pointer.y / this.map.tileHeight);
 
     var state = this.state[y][x];
+    console.log("························2", this.selected, x, y);
     if (!this.selected) {
         // Select the character to move
         var character = CHARACTERS[state];
+        console.log("························3", character, character && character.player, this.player);
         if (character && character.player == this.player) {
             this.selected = character;
             this.reachable = [[], [], [], [], [], [], [], [], []];
@@ -192,15 +198,19 @@ Platformer.TiledState.prototype.onMessage = function(message) {
             if (message.firstPlayer) {
                 this.player = 1;
                 this.send({ type: "STATE", state: this.state, walls: this.walls });
+                this.okButton.visible = true;
             } else {
                 this.player = 2;
             }
-            this.playerText = this.add.text(910, 0, "Player " + this.player, style);
+            //this.playerText = this.add.text(910, 0, "Player " + this.player, style);
             break;
         case "ACTIONS":
             this.proccessActions(message);
+            this.okButton.visible = true;
             break;
         case "STATE":
+            this.state = message.state;
+            this.okButton.visible = true;
             break;
     }
 
@@ -235,6 +245,8 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
         // DIE
         Object.keys(action).forEach(function(id) {
             if (action[id].die) {
+                var player = this.prefabs[id];
+                player.visible = false;
             }
         }, this);
         // MOVE
@@ -335,7 +347,7 @@ Platformer.TiledState.prototype.send = function(message) {
 };
 
 Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
-    if (reach == 0) {
+    if (reach == 0 || x < 0 || y < 0 || x > 15 || y > 8) {
         return;
     }
 
@@ -346,23 +358,23 @@ Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
     var wall, state;
     // NORTH
     state = y > 0 && this.state[y - 1][x];
-    if (state == -1 || state == 3) {
-        wall = this.walls[y - 1][x];
+    if (!state || state == 3) {
+        wall = y >= 1 && this.walls[y - 1][x];
         if (wall != WALL_S && wall != WALL_SW) {
             this.findReachable(x, y - 1, reach - 1);
         }
     }
     // EAST
     state = x < 15 && this.state[y][x + 1];
-    if (state == -1 || state == 3) {
-        wall = this.walls[y][x + 1];
+    if (!state || state == 3) {
+        wall = x < 15 && this.walls[y][x + 1];
         if (wall != WALL_W && wall != WALL_SW) {
             this.findReachable(x + 1, y, reach - 1);
         }
     }
     // SOUTH
     state = y < 8 && this.state[y + 1][x];
-    if (state == -1 || state == 3) {
+    if (!state || state == 3) {
         wall = this.walls[y][x];
         if (wall != WALL_S && wall != WALL_SW) {
             this.findReachable(x, y + 1, reach - 1);
@@ -370,7 +382,7 @@ Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
     }
     // WEST
     state = x > 0 && this.state[y][x - 1];
-    if (state == -1 || state == 3) {
+    if (!state || state == 3) {
         wall = this.walls[y][x];
         if (wall != WALL_W && wall != WALL_SW) {
             this.findReachable(x - 1, y, reach - 1);
