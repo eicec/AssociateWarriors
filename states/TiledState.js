@@ -149,7 +149,8 @@ Platformer.TiledState.prototype.processInput = function(pointer) {
                 for (var x1 = 0; x1 < 16; x1++) {
                     var reach = this.reachable[y1][x1];
                     if (reach) {
-                        this.reachOverlays.push(this.add.text(x1 * this.map.tileWidth + 24, y1 * this.map.tileHeight + 16, reach, style));
+                        //this.reachOverlays.push(this.add.text(x1 * this.map.tileWidth + 24, y1 * this.map.tileHeight + 16, reach, style));
+                        this.reachOverlays.push(this.add.image(x1 * this.map.tileWidth, y1 * this.map.tileHeight, 'area'));
                     }
                 }
             }
