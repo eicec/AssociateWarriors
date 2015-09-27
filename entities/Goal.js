@@ -1,9 +1,10 @@
 var Platformer = Platformer || {};
+var coinN = 1;
 
 Platformer.Goal = function (game_state, position, properties) {
     "use strict";
     properties = properties || {};
-    properties.texture = 'coin1';
+    properties.texture = 'coin' + (coinN++);
     properties.group = 'goals';
     Platformer.Prefab.call(this, game_state, position, properties);
 

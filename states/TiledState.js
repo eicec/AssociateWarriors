@@ -1,7 +1,7 @@
 var Phaser = Phaser || {};
 var Platformer = Platformer || {};
 
-var style = { font: "32px Arial", fill: "#ff0044" };
+var style = { font: "32px Arial", fill: "#99ffcc" };
 
 Platformer.TiledState = function() {
     "use strict";
@@ -66,7 +66,7 @@ Platformer.TiledState.prototype.create = function() {
             this.layers[layer.name].visible = false;
         } else if (layer.name == 'walls') {
             this.walls = tiles;
-            this.layers[layer.name].pivot.set(4, -8);
+            this.layers[layer.name].pivot.set(8, -8);
         }
     }, this);
 

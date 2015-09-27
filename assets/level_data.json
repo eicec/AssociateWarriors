@@ -27,7 +27,9 @@
         "cross": { "type": "image", "source": "assets/cruz.png" },
         "area": { "type": "image", "source": "assets/area.png" },
         "coin1": { "type": "image", "source": "assets/coin1.png" },
-        "coin2": { "type": "image", "source": "assets/coin2.png" }
+        "coin2": { "type": "image", "source": "assets/coin2.png" },
+        "coin3": { "type": "image", "source": "assets/coin3.png" },
+        "smoke": { "type": "image", "source": "assets/smoke-puff.png" }
     },
     "groups": [ "layers", "paths", "goals", "characters" ],
     "map": {
