@@ -212,7 +212,19 @@ Platformer.TiledState.prototype.onMessage = function(message) {
 
 Platformer.TiledState.prototype.proccessActions = function(message) {
     //received: {"type":"ACTIONS","actions":[{"5":{"pos":[1,1],"shoot":false, "die":true},"6":{"pos":[3,3],"shoot":false},"7":{"pos":[5,5]}},{"4":{"pos":[2,2]},"8":{"pos":[4,4]}}]}
+
+    // TODO all this is necessary??
+    var tweens = [], shoots = [], dies = [];
+    var tweensAux = [], shootsAux = [], diesAux = [];
+    var firstTween, firstShoot, firstDie;
+    var tweenAux, shootAux, dieAux;
+
     message.actions.forEach(function(action) {
+
+
+
+        console.log("proccessActions: ", action);
+
         // SHOOT
         Object.keys(action).forEach(function(id) {
             if (action[id].shoot) {
@@ -235,10 +247,44 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
 
                 var player = this.prefabs[id];
 
-                this.add.tween(player).to({ x: (posX * 64), y: (posY * 64) }, 3800, Phaser.Easing.Linear.none, true);
+
+                var tween = this.add.tween(player).to({x: (posX * 64), y: (posY * 64)}, 800, Phaser.Easing.Linear.none);
+
+                if (tweens[id]) {
+                    tweens[id].push(tween);
+                } else {
+                    tweens[id] = [];
+                    tweens[id].push(tween);
+                }
+
             }
+
+
         }, this);
+
     }, this);
+
+    // Chain tween moves.
+
+    tweens.forEach(function(tweenArray) {
+        //if (firstTween) {
+        //    firstTween = tween[0];
+        //}
+        tweenArray.forEach(function(tween){
+
+            if(tweenAux){
+                tweenAux.chain(tween);
+            }
+
+            tweenAux = tween
+        },this);
+
+        tweenAux = null;
+        tweenArray[0].start();
+
+    },this);
+
+
 };
 
 

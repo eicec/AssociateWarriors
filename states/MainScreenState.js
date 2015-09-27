@@ -23,9 +23,9 @@ Platformer.MainScreenState.prototype.init = function(level_data) {
 Platformer.MainScreenState.prototype.preload = function() {
     "use strict";
 
-    this.logo = game.add.sprite(200, 50, 'logo');
+    this.logo = game.add.sprite(220, 50, 'logo');
 
-    this.play = game.add.sprite(350, 385, 'play');
+    this.play = game.add.sprite(390, 395, 'play');
 
     this.play.scale.setTo(0.4, 0.4);
     this.play.inputEnabled = true;
