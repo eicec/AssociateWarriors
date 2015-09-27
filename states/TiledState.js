@@ -28,7 +28,6 @@ Platformer.TiledState.prototype.init = function(level_data) {
     this.bg = game.add.tileSprite(0, 0, 1024, 576, 'background');
 
     this.player = 0;
-    this.actionController = 0;
 
     this.input.onDown.add(this.processInput, this);
 
@@ -64,9 +63,11 @@ Platformer.TiledState.prototype.create = function() {
 
         if (layer.name == 'objetos') {
             this.state = tiles;
-            this.layers[layer.name].alpha = 0.2; // FIXME: visible = false
+            this.layers[layer.name].visible = false;
         } else if (layer.name == 'walls') {
             this.walls = tiles;
+            // FIXME window.x = this.layers[layer.name];
+            this.layers[layer.name].position.set(-4, 8)
         }
     }, this);
 
@@ -74,8 +75,9 @@ Platformer.TiledState.prototype.create = function() {
     this.add.button(940, 30, 'go', function() {
         console.log("paths: ", JSON.stringify(this.paths));
         this.send({ type: "MOVE", move: this.paths });
+        var pathGroup = this.groups["paths"];
         Object.keys(this.visiblePaths).forEach(function(key) {
-            this.world.remove(this.visiblePaths[key])
+            pathGroup.remove(this.visiblePaths[key])
         }, this);
         this.paths = {};
         this.visiblePaths = {};
@@ -91,7 +93,7 @@ Platformer.TiledState.prototype.create = function() {
 Platformer.TiledState.prototype.create_object = function(object) {
     "use strict";
     var position, prefab;
-    position = { "x": object.x * this.map.tileHeight + 6, "y": object.y * this.map.tileHeight - 6 };
+    position = { "x": object.x * this.map.tileHeight, "y": object.y * this.map.tileHeight };
     switch (object.index) {
         case P11:
         case P21:
@@ -150,17 +152,26 @@ Platformer.TiledState.prototype.processInput = function(pointer) {
         // Select target destination
         var reachable = this.reachable[y][x];
         if (reachable) {
+            var pathGroup = this.groups["paths"];
             this.path = [];
             this.findPath(x, y);
             var points = this.path.map(function(p) {
                 return new Phaser.Point(p[0] * this.map.tileWidth, p[1] * this.map.tileHeight)
             }, this);
+
             if (this.visiblePaths[this.selected.type]) {
-                this.world.remove(this.visiblePaths[this.selected.type]);
+                pathGroup.remove(this.visiblePaths[this.selected.type]);
             }
-            this.visiblePaths[this.selected.type] = this.game.add.rope(32, 32, 'line', null, points);
+            if (this.visiblePaths[this.selected.type + "X"]) {
+                pathGroup.remove(this.visiblePaths[this.selected.type + "X"]);
+            }
+
+            this.visiblePaths[this.selected.type] = this.game.add.rope(32, 32, 'line', null, points, pathGroup);
             this.path.shift();
             this.paths[this.selected.type] = this.path;
+
+            var last = points[points.length - 1];
+            this.visiblePaths[this.selected.type + "X"] = this.game.add.image(last.x, last.y, "cross", 0, pathGroup);
         }
         this.selected = null;
         this.reachOverlays.forEach(function(overlay) {
@@ -222,8 +233,6 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
                 var posX = pos[0];
                 var posY = pos[1];
 
-                console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@1", this.prefabs);
-                console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@2", pos);
                 var player = this.prefabs[id];
 
                 this.add.tween(player).to({ x: (posX * 64), y: (posY * 64) }, 3800, Phaser.Easing.Linear.none, true);

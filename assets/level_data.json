@@ -26,7 +26,7 @@
         "background": { "type": "image", "source": "assets/fundo.png" },
         "cross": { "type": "image", "source": "assets/cruz.png" }
     },
-    "groups": [ "layers", "characters" ],
+    "groups": [ "layers", "paths", "characters" ],
     "map": {
         "key": "level1_tilemap",
         "tileset": "map_tiles"
