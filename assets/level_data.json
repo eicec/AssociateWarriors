@@ -25,11 +25,16 @@
         "logo": { "type": "image", "source": "assets/awlogo.png" },
         "play": { "type": "image", "source": "assets/play.png" },
         "background": { "type": "image", "source": "assets/fundo.png" },
-        "cross": { "type": "image", "source": "assets/cruz.png" }
+        "cross": { "type": "image", "source": "assets/cruz.png" },
+        "area": { "type": "image", "source": "assets/area.png" },
+        "coin1": { "type": "image", "source": "assets/coin1.png" },
+        "coin2": { "type": "image", "source": "assets/coin2.png" },
+        "coin3": { "type": "image", "source": "assets/coin3.png" },
+        "smoke": { "type": "image", "source": "assets/smoke-puff.png" }
     },
-    "groups": [ "layers", "paths", "characters" ],
+    "groups": [ "layers", "paths", "goals", "characters" ],
     "map": {
-        "key": "level1_tilemap",
+        "key": "level2_tilemap",
         "tileset": "map_tiles"
     }
 }

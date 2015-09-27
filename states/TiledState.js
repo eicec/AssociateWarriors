@@ -1,7 +1,7 @@
 var Phaser = Phaser || {};
 var Platformer = Platformer || {};
 
-var style = { font: "32px Arial", fill: "#ff0044" };
+var style = { font: "32px Arial", fill: "#99ffcc" };
 
 Platformer.TiledState = function() {
     "use strict";
@@ -23,7 +23,7 @@ Platformer.TiledState.prototype.init = function(level_data) {
     this.map = this.game.add.tilemap(level_data.map.key);
     this.map.addTilesetImage(this.map.tilesets[0].name, level_data.map.tileset);
 
-    this.ws = new WebSocket("ws://localhost:8080/");
+    this.ws = new WebSocket(document.location.hostname == 'localhost' ? "ws://localhost:8080/" : "ws://associate-warriors.herokuapp.com/");
     this.ws.onmessage = this.onMessage.bind(this);
     this.bg = game.add.tileSprite(0, 0, 1024, 576, 'background');
 
@@ -55,7 +55,7 @@ Platformer.TiledState.prototype.create = function() {
         layer.data.forEach(function(data_row) { // find tiles used in the layer
             var row = [];
             data_row.forEach(function(tile) {
-                row.push(tile.index);
+                row.push(tile.index > 0 ? tile.index : 0);
                 this.create_object(tile);
             }, this);
             tiles.push(row);
@@ -66,13 +66,12 @@ Platformer.TiledState.prototype.create = function() {
             this.layers[layer.name].visible = false;
         } else if (layer.name == 'walls') {
             this.walls = tiles;
-            // FIXME window.x = this.layers[layer.name];
-            this.layers[layer.name].position.set(-4, 8)
+            this.layers[layer.name].pivot.set(8, -8);
         }
     }, this);
 
     // create go button
-    this.add.button(940, 30, 'go', function() {
+    this.okButton = this.add.button(900, 0, 'go', function() {
         console.log("paths: ", JSON.stringify(this.paths));
         this.send({ type: "MOVE", move: this.paths });
         var pathGroup = this.groups["paths"];
@@ -81,9 +80,11 @@ Platformer.TiledState.prototype.create = function() {
         }, this);
         this.paths = {};
         this.visiblePaths = {};
+        this.okButton.visible = false;
         this.showMessage(WAITING_OTHER_PLAYER);
     }, this, 1, 2);
 
+    this.okButton.visible = false;
     this.showMessage(CONNECTING);
 
     // resize the world to be the size of the current layer
@@ -93,7 +94,7 @@ Platformer.TiledState.prototype.create = function() {
 Platformer.TiledState.prototype.create_object = function(object) {
     "use strict";
     var position, prefab;
-    position = { "x": object.x * this.map.tileHeight, "y": object.y * this.map.tileHeight };
+    position = { "x": object.x * this.map.tileHeight + 32, "y": object.y * this.map.tileHeight + 32 };
     switch (object.index) {
         case P11:
         case P21:
@@ -127,6 +128,7 @@ Platformer.TiledState.prototype.create_object = function(object) {
         this.prefabs[object.index] = prefab;
     }
 };
+
 Platformer.TiledState.prototype.processInput = function(pointer) {
     var x = Math.floor(pointer.x / this.map.tileWidth);
     var y = Math.floor(pointer.y / this.map.tileHeight);
@@ -143,7 +145,8 @@ Platformer.TiledState.prototype.processInput = function(pointer) {
                 for (var x1 = 0; x1 < 16; x1++) {
                     var reach = this.reachable[y1][x1];
                     if (reach) {
-                        this.reachOverlays.push(this.add.text(x1 * this.map.tileWidth + 24, y1 * this.map.tileHeight + 16, reach, style));
+                        //this.reachOverlays.push(this.add.text(x1 * this.map.tileWidth + 24, y1 * this.map.tileHeight + 16, reach, style));
+                        this.reachOverlays.push(this.add.image(x1 * this.map.tileWidth, y1 * this.map.tileHeight, 'area'));
                     }
                 }
             }
@@ -192,15 +195,19 @@ Platformer.TiledState.prototype.onMessage = function(message) {
             if (message.firstPlayer) {
                 this.player = 1;
                 this.send({ type: "STATE", state: this.state, walls: this.walls });
+                this.okButton.visible = true;
             } else {
                 this.player = 2;
             }
-            this.playerText = this.add.text(910, 0, "Player " + this.player, style);
+            //this.playerText = this.add.text(910, 0, "Player " + this.player, style);
             break;
         case "ACTIONS":
             this.proccessActions(message);
+            this.okButton.visible = true;
             break;
         case "STATE":
+            this.state = message.state;
+            this.okButton.visible = true;
             break;
     }
 
@@ -211,109 +218,91 @@ Platformer.TiledState.prototype.onMessage = function(message) {
 };
 
 Platformer.TiledState.prototype.proccessActions = function(message) {
-    //received: {"type":"ACTIONS","actions":[{"5":{"pos":[1,1],"shoot":false, "die":true},"6":{"pos":[3,3],"shoot":false},"7":{"pos":[5,5]}},{"4":{"pos":[2,2]},"8":{"pos":[4,4]}}]}
-
-    // TODO all this is necessary??
-    var tweens = [], shoots = [], dies = [];
-    var tweensAux = [], shootsAux = [], diesAux = [];
-    var firstTween, firstShoot, firstDie;
-    var tweenAux, shootAux, dieAux;
-
+    var i = 0;
+    var bullet = null;
     message.actions.forEach(function(action) {
-
-
-
-        console.log("proccessActions: ", action);
-
-        // SHOOT
-        Object.keys(action).forEach(function(id) {
-            if (action[id].shoot) {
-                var shootX = action[id].shoot[0];
-                var shootY = action[id].shoot[1];
-            }
-        }, this);
-        // DIE
-        Object.keys(action).forEach(function(id) {
-            if (action[id].die) {
-            }
-        }, this);
-        // MOVE
-        Object.keys(action).forEach(function(id) {
-            // ver se o player está vivo
-            var pos = action[id].pos;
-            if (pos) {
-                var posX = pos[0];
-                var posY = pos[1];
-
+        setTimeout(function() {
+            console.log("proccessActions: ", action);
+            Object.keys(action).forEach(function(id) {
                 var player = this.prefabs[id];
+                console.log("player: ", id);
 
+                // SHOOT
+                if (action[id].shoot) {
+                    if (id == P11 || id == P21) {
+                        bullet = game.add.sprite(player.x + 32, player.y + 32, 'p11_p');
+                    } else if (id == P12 || id == P22) {
+                        bullet = game.add.sprite(player.x + 32, player.y + 32, 'p12_p');
+                    } else if (id == P13 || id == P23) {
+                        bullet = game.add.sprite(player.x + 32, player.y + 32, 'p13_p');
+                    }
 
-                var tween = this.add.tween(player).to({x: (posX * 64), y: (posY * 64), angle: this.calculateAngle()}, 800, Phaser.Easing.Linear.none);
+                    var shoot = new Phaser.Point(action[id].shoot[0] * 64 + 64, action[id].shoot[1] * 64 + 64);
 
-                if (tweens[id]) {
-                    tweens[id].push(tween);
-                } else {
-                    tweens[id] = [];
-                    tweens[id].push(tween);
+                    bullet.position = Phaser.Point.add(bullet.position, Phaser.Point.subtract(shoot, bullet.position).setMagnitude(32));
+                    bullet.angle = this.calculateAngle(bullet, shoot.x, shoot.y);
+
+                    var bulletTween = this.add.tween(bullet).to({ x: shoot.x, y: shoot.y }, 300, Phaser.Easing.Linear.none, false);
+                    bulletTween.onComplete.add(function() {
+                        bullet.destroy();
+                        //emitter.destroy();
+                        player.frame = 0;
+                    }, this);
+                    var rotTween = this.add.tween(player).to({ angle: bullet.angle }, 100, Phaser.Easing.Linear.none, true);
+                    rotTween.onComplete.add(function() {
+                        player.frame = 1;
+                    }, this);
+                    rotTween.chain(bulletTween);
                 }
 
-            }
+                // DIE
+                if (action[id].die) {
+                    this.add.tween(player).to({ alpha: 0 }, 1000, Phaser.Easing.Linear.none, true, 100);
+                }
 
+                // MOVE
+                var pos = action[id].pos;
+                if (pos) {
+                    console.log("move: ", pos);
+                    var posX = pos[0];
+                    var posY = pos[1];
 
-        }, this);
-
+                    var angle = this.calculateAngle(player, (posX * 64) + 32, (posY * 64) + 32);
+                    this.add.tween(player).to({ angle: angle }, 100, Phaser.Easing.Linear.none, true).chain(
+                            this.add.tween(player).to({ x: (posX * 64) + 32, y: (posY * 64) + 32 }, 600, Phaser.Easing.Linear.none)
+                    );
+                }
+            }, this);
+        }.bind(this), (i++) * 700);
     }, this);
-
-    // Chain tween moves.
-
-    tweens.forEach(function(tweenArray) {
-        //if (firstTween) {
-        //    firstTween = tween[0];
-        //}
-        tweenArray.forEach(function(tween){
-
-            if(tweenAux){
-                tweenAux.chain(tween);
-            }
-
-            tweenAux = tween
-        },this);
-
-        tweenAux = null;
-        tweenArray[0].start();
-
-    },this);
-
-
 };
 
-
-Platformer.TiledState.prototype.calculateAngle = function(x,y,xPos,yPos) {
-
+Platformer.TiledState.prototype.calculateAngle = function(player, xPos, yPos) {
     var angle;
+    var lastAngle = player.angle;
+    var dx = xPos - player.x;
+    var dy = yPos - player.y;
 
-    if (x > xPos) {
-        angle = 0;
-
-    } else if (x < xPos) {
-        angle = 180;
-
+    if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx < -1) {
+            angle = 0;
+        } else if (dx > 1) {
+            angle = 180;
+        }
+    } else {
+        if (dy < -1) {
+            angle = 90;
+        } else if (dy > 1) {
+            angle = -90;
+        }
     }
 
-    if (y > yPos) {
-        angle = 90;
-
-    } else if (y < yPos) {
-        angle = -90;
-
+    while (Math.abs(lastAngle - angle) > 180) {
+        angle += angle < lastAngle ? 360 : -360;
     }
-
-    console.log("Angle: ",angle);
 
     return angle;
 };
-
-
 
 /////////////////////////////////////////////////////////////
 
@@ -322,7 +311,7 @@ Platformer.TiledState.prototype.send = function(message) {
 };
 
 Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
-    if (reach == 0) {
+    if (reach == 0 || x < 0 || y < 0 || x > 15 || y > 8) {
         return;
     }
 
@@ -333,23 +322,23 @@ Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
     var wall, state;
     // NORTH
     state = y > 0 && this.state[y - 1][x];
-    if (state == -1 || state == 3) {
-        wall = this.walls[y - 1][x];
+    if (!state || state == 3) {
+        wall = y >= 1 && this.walls[y - 1][x];
         if (wall != WALL_S && wall != WALL_SW) {
             this.findReachable(x, y - 1, reach - 1);
         }
     }
     // EAST
     state = x < 15 && this.state[y][x + 1];
-    if (state == -1 || state == 3) {
-        wall = this.walls[y][x + 1];
+    if (!state || state == 3) {
+        wall = x < 15 && this.walls[y][x + 1];
         if (wall != WALL_W && wall != WALL_SW) {
             this.findReachable(x + 1, y, reach - 1);
         }
     }
     // SOUTH
     state = y < 8 && this.state[y + 1][x];
-    if (state == -1 || state == 3) {
+    if (!state || state == 3) {
         wall = this.walls[y][x];
         if (wall != WALL_S && wall != WALL_SW) {
             this.findReachable(x, y + 1, reach - 1);
@@ -357,7 +346,7 @@ Platformer.TiledState.prototype.findReachable = function(x, y, reach) {
     }
     // WEST
     state = x > 0 && this.state[y][x - 1];
-    if (state == -1 || state == 3) {
+    if (!state || state == 3) {
         wall = this.walls[y][x];
         if (wall != WALL_W && wall != WALL_SW) {
             this.findReachable(x - 1, y, reach - 1);
