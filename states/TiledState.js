@@ -101,7 +101,7 @@ Platformer.TiledState.prototype.create_object = function(object) {
             prefab = new Platformer.Player(this, position, {
                 texture: CHARACTERS[object.index].name,
                 group: "characters",
-                isP1: object.index == P11
+                index: object.index
             });
             break;
         case P12:
@@ -109,7 +109,7 @@ Platformer.TiledState.prototype.create_object = function(object) {
             prefab = new Platformer.Player(this, position, {
                 texture: CHARACTERS[object.index].name,
                 group: "characters",
-                isP1: object.index == P12
+                index: object.index
             });
             break;
         case P13:
@@ -117,7 +117,7 @@ Platformer.TiledState.prototype.create_object = function(object) {
             prefab = new Platformer.Player(this, position, {
                 texture: CHARACTERS[object.index].name,
                 group: "characters",
-                isP1: object.index == P13
+                index: object.index
             });
             break;
         case MONEY:
@@ -217,6 +217,8 @@ Platformer.TiledState.prototype.onMessage = function(message) {
     }
 };
 
+var end = false;
+
 Platformer.TiledState.prototype.proccessActions = function(message) {
     var i = 0;
     var bullet = null;
@@ -224,8 +226,21 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
         setTimeout(function() {
             console.log("proccessActions: ", action);
             Object.keys(action).forEach(function(id) {
+                if (end) {
+                    return;
+                }
+
                 var player = this.prefabs[id];
                 console.log("player: ", id);
+
+                if (action[id].win === true) {
+                    if (CHARACTERS[id].player == this.player) {
+                        this.showMessage("Ganhou!");
+                    } else {
+                        this.showMessage("Perdeu!");
+                    }
+                    end = true;
+                }
 
                 // SHOOT
                 if (action[id].shoot) {
