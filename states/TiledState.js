@@ -1,8 +1,6 @@
 var Phaser = Phaser || {};
 var Platformer = Platformer || {};
 
-var style = { font: "32px Arial", fill: "#ff0044" };
-
 Platformer.TiledState = function() {
     "use strict";
     Phaser.State.call(this);
@@ -25,6 +23,7 @@ Platformer.TiledState.prototype.init = function(level_data) {
 
     this.ws = new WebSocket("ws://localhost:8080/");
     this.ws.onmessage = this.onMessage.bind(this);
+    this.bg = game.add.tileSprite(0, 0, 1024, 576, 'background');
 
     this.player = 0;
     this.actionController = 0;
