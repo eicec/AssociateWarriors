@@ -66,8 +66,7 @@ Platformer.TiledState.prototype.create = function() {
             this.layers[layer.name].visible = false;
         } else if (layer.name == 'walls') {
             this.walls = tiles;
-            // FIXME window.x = this.layers[layer.name];
-            this.layers[layer.name].position.set(-4, 8)
+            this.layers[layer.name].pivot.set(4, -8);
         }
     }, this);
 
@@ -230,27 +229,25 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
 
                 // SHOOT
                 if (action[id].shoot) {
-                    if(id == P11 || id ==  P21) {
-                     bullet = game.add.sprite(player.x, player.y, 'p11_p');
-                    } else if(id == P12 || id ==  P22) {
-                     bullet = game.add.sprite(player.x, player.y, 'p12_p');
-                    } else if(id == P13 || id ==  P23) {
-                     bullet = game.add.sprite(player.x, player.y, 'p13_p');
+                    if (id == P11 || id == P21) {
+                        bullet = game.add.sprite(player.x, player.y, 'p11_p');
+                    } else if (id == P12 || id == P22) {
+                        bullet = game.add.sprite(player.x, player.y, 'p12_p');
+                    } else if (id == P13 || id == P23) {
+                        bullet = game.add.sprite(player.x, player.y, 'p13_p');
                     }
 
+                    var shootX = action[id].shoot[0] * 64 + 32;
+                    var shootY = action[id].shoot[1] * 64 + 32;
 
-                    var shootX = action[id].shoot[0];
-                    var shootY = action[id].shoot[1];
+                    bullet.angle = this.calculateAngle(player, shootX, shootY);
 
-                    bullet.angle = player.angle;
-
-                    console.log("Shoots: X : Y = ",shootX+" : "+shootY);
-                    //aux
-                    game.add.sprite((shootX * 64), (shootY * 64), 'p11_p');
-
-                    this.add.tween(bullet).to({ x: (shootX * 64), y: (shootY * 64) }, 500, Phaser.Easing.Linear.none, true);
-
-
+                    var tween = this.add.tween(bullet).to({ x: shootX, y: shootY }, 300, Phaser.Easing.Linear.none, false);
+                    tween.onComplete.add(function() {
+                        bullet.destroy();
+                        //emitter.destroy();
+                    }, this);
+                    this.add.tween(player).to({ angle: bullet.angle }, 100, Phaser.Easing.Linear.none, true).chain(tween);
                 }
 
                 // DIE
@@ -277,11 +274,6 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
             }, this);
         }.bind(this), (i++) * 700);
     }, this);
-
-    if(bullet){
-        bullet.kill();
-        bullet = null;
-    }
 };
 
 Platformer.TiledState.prototype.calculateAngle = function(player, xPos, yPos) {
@@ -289,8 +281,6 @@ Platformer.TiledState.prototype.calculateAngle = function(player, xPos, yPos) {
     var lastAngle = player.angle;
     var dx = xPos - player.x;
     var dy = yPos - player.y;
-
-    console.log("dx, dy: ", dx, dy);
 
     if (Math.abs(dx) > Math.abs(dy)) {
         if (dx < -1) {
@@ -305,9 +295,6 @@ Platformer.TiledState.prototype.calculateAngle = function(player, xPos, yPos) {
             angle = -90;
         }
     }
-
-    console.log("last angle: ", lastAngle);
-    console.log("angle: ", angle);
 
     while (Math.abs(lastAngle - angle) > 180) {
         angle += angle < lastAngle ? 360 : -360;
