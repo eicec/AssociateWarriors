@@ -20,14 +20,16 @@
         "p23_p": { "type": "image", "source": "assets/player2/tartaruga_projetil.png" },
 
         "line": { "type": "image", "source": "assets/line.png" },
-        "go": { "type": "spritesheet", "source": "assets/go.png", "frame_width": 128, "frame_height": 64, "frames": 2, "margin": 0, "spacing": 0  },
+        "go": { "type": "spritesheet", "source": "assets/go.png", "frame_width": 128, "frame_height": 64, "frames": 3, "margin": 0, "spacing": 0  },
         "logo": { "type": "image", "source": "assets/awlogo.png" },
         "play": { "type": "image", "source": "assets/play.png" },
         "background": { "type": "image", "source": "assets/fundo.png" },
         "cross": { "type": "image", "source": "assets/cruz.png" },
-        "area": { "type": "image", "source": "assets/area.png" }
+        "area": { "type": "image", "source": "assets/area.png" },
+        "coin1": { "type": "image", "source": "assets/coin1.png" },
+        "coin2": { "type": "image", "source": "assets/coin2.png" }
     },
-    "groups": [ "layers", "paths", "characters" ],
+    "groups": [ "layers", "paths", "goals", "characters" ],
     "map": {
         "key": "level1_tilemap",
         "tileset": "map_tiles"
