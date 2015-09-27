@@ -23,11 +23,14 @@ Platformer.MainScreenState.prototype.init = function(level_data) {
 Platformer.MainScreenState.prototype.preload = function() {
     "use strict";
 
-    this.logo = game.add.sprite(220, 50, 'logo');
+	this.mainbg = game.add.sprite(0, 0, 'mainbg');
+	
+    this.logo = game.add.sprite(240, 20, 'logo');
+	this.logo.scale.setTo(0.7, 0.7);
 
-    this.play = game.add.sprite(390, 395, 'play');
+    this.play = game.add.sprite(410, 470, 'play');
 
-    this.play.scale.setTo(0.4, 0.4);
+    this.play.scale.setTo(0.3, 0.3);
     this.play.inputEnabled = true;
 
 }
