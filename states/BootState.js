@@ -12,6 +12,8 @@ Platformer.prototype.constructor = Platformer.BootState;
 Platformer.BootState.prototype.init = function() {
     "use strict";
     this.level_files = ["assets/level_data.json"];
+    game.stage.backgroundColor =  '#FFFFF1';
+
 };
 
 Platformer.BootState.prototype.preload = function() {

@@ -1,6 +1,8 @@
 var Phaser = Phaser || {};
 var Platformer = Platformer || {};
 
+var style = { font: "32px Arial", fill: "#ff0044" };
+
 Platformer.TiledState = function() {
     "use strict";
     Phaser.State.call(this);

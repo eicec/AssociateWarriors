@@ -14,10 +14,10 @@ Platformer.MainScreenState.prototype.init = function(level_data) {
 
     this.level_data = level_data;
 
-    game.state.scaleMode = Phaser.ScaleManager.NO_SCALE;
-    game.state.pageAlignHorizontally = true;
-    game.state.pageAlignVertically = true;
-
+    this.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+    this.scale.pageAlignHorizontally = true;
+    this.scale.pageAlignVertically = true;
+    
 }
 
 Platformer.MainScreenState.prototype.preload = function() {

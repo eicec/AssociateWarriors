@@ -9,4 +9,3 @@ game.state.add("MainScreenState", new Platformer.MainScreenState());
 game.state.add("GameState", new Platformer.TiledState());
 
 game.state.start("BootState", true, false);
-
