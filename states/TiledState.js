@@ -221,99 +221,47 @@ Platformer.TiledState.prototype.onMessage = function(message) {
 };
 
 Platformer.TiledState.prototype.proccessActions = function(message) {
-    //received: {"type":"ACTIONS","actions":[{"5":{"pos":[1,1],"shoot":false, "die":true},"6":{"pos":[3,3],"shoot":false},"7":{"pos":[5,5]}},{"4":{"pos":[2,2]},"8":{"pos":[4,4]}}]}
-
-    // TODO all this is necessary??
-    var tweens = [], shoots = [], dies = [];
-    var tweensAux = [], shootsAux = [], diesAux = [];
-    var firstTween, firstShoot, firstDie;
-    var tweenAux, shootAux, dieAux;
-
+    var i = 0;
     message.actions.forEach(function(action) {
-
-
-
-        console.log("proccessActions: ", action);
-
-        // SHOOT
-        Object.keys(action).forEach(function(id) {
-            if (action[id].shoot) {
-                var shootX = action[id].shoot[0];
-                var shootY = action[id].shoot[1];
-            }
-        }, this);
-        // DIE
-        Object.keys(action).forEach(function(id) {
-            if (action[id].die) {
+        setTimeout(function() {
+            console.log("proccessActions: ", action);
+            Object.keys(action).forEach(function(id) {
                 var player = this.prefabs[id];
-                player.visible = false;
-            }
-        }, this);
-        // MOVE
-        Object.keys(action).forEach(function(id) {
-            // ver se o player está vivo
-            var pos = action[id].pos;
-            if (pos) {
-                var posX = pos[0];
-                var posY = pos[1];
+                console.log("player: ", id);
 
-                var player = this.prefabs[id];
-
-
-                var tween = this.add.tween(player).to({x: (posX * 64), y: (posY * 64)}, 5000, Phaser.Easing.Linear.none);
-
-                var angle = this.calculateAngle(player.x,player.y,(posX*64),(posY*64));
-
-                var tweenAngle = null;
-
-                if(angle != player.angle){
-                     tweenAngle = this.add.tween(player).to({angle: angle}, 2000, Phaser.Easing.Linear.none);
-
+                // SHOOT
+                if (action[id].shoot) {
+                    var shootX = action[id].shoot[0];
+                    var shootY = action[id].shoot[1];
                 }
 
-                if (tweens[id]) {
-                    tweens[id].push(tween);
-                } else {
-                    tweens[id] = [];
-                    tweens[id].push(tween);
+                // DIE
+                if (action[id].die) {
+                    this.add.tween(player).to({ alpha: 0 }, 1000, Phaser.Easing.Linear.none, true, 100);
                 }
 
-                if(tweenAngle) {
-                    tweens[id].push(tweenAngle);
+                // MOVE
+                var pos = action[id].pos;
+                if (pos) {
+                    console.log("move: ", pos);
+                    var posX = pos[0];
+                    var posY = pos[1];
+
+                    var angle = this.calculateAngle(player.x, player.y, (posX * 64), (posY * 64));
+                    if (angle && false) {
+                        this.add.tween(player).to({ angle: angle }, 100, Phaser.Easing.Linear.none, true).chain(
+                                this.add.tween(player).to({ x: (posX * 64), y: (posY * 64) }, 700, Phaser.Easing.Linear.none)
+                        );
+                    } else {
+                        this.add.tween(player).to({ x: (posX * 64), y: (posY * 64) }, 800, Phaser.Easing.Linear.none, true);
+                    }
                 }
-
-            }
-
-
-        }, this);
-
+            }, this);
+        }.bind(this), (i++) * 800);
     }, this);
-
-    // Chain tween moves.
-
-    tweens.forEach(function(tweenArray) {
-        //if (firstTween) {
-        //    firstTween = tween[0];
-        //}
-        tweenArray.forEach(function(tween){
-
-            if(tweenAux){
-                tweenAux.chain(tween);
-            }
-
-            tweenAux = tween
-        },this);
-
-        tweenAux = null;
-        tweenArray[0].start();
-
-    },this);
-
-
 };
 
-
-Platformer.TiledState.prototype.calculateAngle = function(x,y,xPos,yPos) {
+Platformer.TiledState.prototype.calculateAngle = function(x, y, xPos, yPos) {
 
     var angle;
 
@@ -333,12 +281,10 @@ Platformer.TiledState.prototype.calculateAngle = function(x,y,xPos,yPos) {
 
     }
 
-    console.log("Angle: ",angle);
+    console.log("Angle: ", angle);
 
     return angle;
 };
-
-
 
 /////////////////////////////////////////////////////////////
 
