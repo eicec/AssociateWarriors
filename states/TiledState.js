@@ -23,7 +23,7 @@ Platformer.TiledState.prototype.init = function(level_data) {
     this.map = this.game.add.tilemap(level_data.map.key);
     this.map.addTilesetImage(this.map.tilesets[0].name, level_data.map.tileset);
 
-    this.ws = new WebSocket("ws://localhost:8080/");
+    this.ws = new WebSocket(document.location.hostname == 'localhost' ? "ws://localhost:8080/" : "ws://associate-warriors.herokuapp.com/");
     this.ws.onmessage = this.onMessage.bind(this);
     this.bg = game.add.tileSprite(0, 0, 1024, 576, 'background');
 
@@ -263,13 +263,9 @@ Platformer.TiledState.prototype.proccessActions = function(message) {
                     var posY = pos[1];
 
                     var angle = this.calculateAngle(player, (posX * 64) + 32, (posY * 64) + 32);
-                    if (angle) {
-                        this.add.tween(player).to({ angle: angle }, 100, Phaser.Easing.Linear.none, true).chain(
-                                this.add.tween(player).to({ x: (posX * 64) + 32, y: (posY * 64) + 32 }, 600, Phaser.Easing.Linear.none)
-                        );
-                    } else {
-                        this.add.tween(player).to({ x: (posX * 64) + 32, y: (posY * 64) + 32 }, 700, Phaser.Easing.Linear.none, true);
-                    }
+                    this.add.tween(player).to({ angle: angle }, 100, Phaser.Easing.Linear.none, true).chain(
+                            this.add.tween(player).to({ x: (posX * 64) + 32, y: (posY * 64) + 32 }, 600, Phaser.Easing.Linear.none)
+                    );
                 }
             }, this);
         }.bind(this), (i++) * 700);
