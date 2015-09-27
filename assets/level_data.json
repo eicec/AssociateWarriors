@@ -11,7 +11,11 @@
         "p22": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
         "p23": { "type": "spritesheet", "source": "assets/p21.png", "frame_width": 64, "frame_height": 64, "frames": 4, "margin": 0, "spacing": 0 },
         "line": { "type": "image", "source": "assets/line.png" },
-        "go": { "type": "spritesheet", "source": "assets/go.png", "frame_width": 128, "frame_height": 64, "frames": 2, "margin": 0, "spacing": 0  }
+        "go": { "type": "spritesheet", "source": "assets/go.png", "frame_width": 128, "frame_height": 64, "frames": 2, "margin": 0, "spacing": 0  },
+        "logo": { "type": "image", "source": "assets/awlogo.png" },
+        "play": { "type": "image", "source": "assets/play.png" },
+        "background": { "type": "image", "source": "assets/fundo.png" },
+        "cross": { "type": "image", "source": "assets/cruz.png" }
     },
     "groups": [ "layers", "characters" ],
     "map": {

@@ -25,6 +25,7 @@ Platformer.TiledState.prototype.init = function(level_data) {
 
     this.ws = new WebSocket("ws://localhost:8080/");
     this.ws.onmessage = this.onMessage.bind(this);
+    this.bg = game.add.tileSprite(0, 0, 1024, 576, 'background');
 
     this.player = 0;
     this.actionController = 0;
@@ -71,7 +72,7 @@ Platformer.TiledState.prototype.create = function() {
 
     // create go button
     this.add.button(940, 30, 'go', function() {
-        console.log("Paths: "+this.paths.toString());
+        console.log("Paths: " + this.paths.toString());
         console.log(this.player);
         this.send({ type: "MOVE", move: this.paths });
         Object.keys(this.visiblePaths).forEach(function(key) {
@@ -91,19 +92,31 @@ Platformer.TiledState.prototype.create = function() {
 Platformer.TiledState.prototype.create_object = function(object) {
     "use strict";
     var position, prefab;
-    position = { "x": object.x * this.map.tileHeight, "y": object.y * this.map.tileHeight };
+    position = { "x": object.x * this.map.tileHeight + 6, "y": object.y * this.map.tileHeight - 6 };
     switch (object.index) {
         case P11:
         case P21:
-            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters", isP1: object.index == P11 });
+            prefab = new Platformer.Player(this, position, {
+                texture: CHARACTERS[object.index].name,
+                group: "characters",
+                isP1: object.index == P11
+            });
             break;
         case P12:
         case P22:
-            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters", isP1: object.index == P12 });
+            prefab = new Platformer.Player(this, position, {
+                texture: CHARACTERS[object.index].name,
+                group: "characters",
+                isP1: object.index == P12
+            });
             break;
         case P13:
         case P23:
-            prefab = new Platformer.Player(this, position, { texture: CHARACTERS[object.index].name, group: "characters", isP1: object.index == P13 });
+            prefab = new Platformer.Player(this, position, {
+                texture: CHARACTERS[object.index].name,
+                group: "characters",
+                isP1: object.index == P13
+            });
             break;
         case MONEY:
             prefab = new Platformer.Goal(this, position);
@@ -161,9 +174,8 @@ Platformer.TiledState.prototype.showMessage = function(message) {
 };
 
 Platformer.TiledState.prototype.onMessage = function(message) {
+    console.log("message received:", message);
     message = JSON.parse(message.data);
-    console.log("Player Received message:", message.toString);
-    console.log("Player received type:"+message.type);
     switch (message.type) {
         case "START":
             if (message.firstPlayer) {
@@ -175,25 +187,12 @@ Platformer.TiledState.prototype.onMessage = function(message) {
             this.playerText = this.add.text(910, 0, "Player " + this.player, style);
             break;
         case "ACTIONS":
-            this.actionController += 1;
-            this.message.forEach(function(value) {
-                console.log('Json value'+value);
-            }, this);
-
-            //Object.keys(this.visiblePaths).forEach(function(key) {
-            //    this.world.remove(this.visiblePaths[key])
-            //}, this);
-
             break;
         case "STATE":
-            this.actionController += 1;
-
             break;
     }
 
-    console.log("Action Controller"+ this.actionController);
-
-    if (this.message ) {
+    if (this.message) {
         this.world.remove(this.message);
         this.message = null;
         this.actionController = 0;

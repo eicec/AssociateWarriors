@@ -40,5 +40,5 @@ Platformer.LoadingState.prototype.preload = function() {
 
 Platformer.LoadingState.prototype.create = function() {
     "use strict";
-    this.game.state.start("GameState", true, false, this.level_data);
+    this.game.state.start("MainScreenState", true, false, this.level_data);
 };
